@@ -1,0 +1,117 @@
+
+
+			(store_script_param_1, ":center_no"),
+      		(store_script_param_2, ":faction"),
+      		(store_script_param, ":town_lord", 3),	
+      		(try_for_range, ":item_no", trade_goods_begin, trade_goods_end),
+		    	(store_sub, ":offset", ":item_no", trade_goods_begin),
+		    	(val_add, ":offset", slot_town_trade_good_prices_begin),
+				(party_set_slot, ":center_no", ":offset, average_price_factor),		#F&B Check should make goods initiatelly more expensive for new towns, not avg.	    		    
+			(try_end),
+				#Bind village to nearby town
+			(assign, ":min_dist", 999999),
+         	(assign, ":min_dist_town", -1),
+          	(try_for_range, ":cur_town", towns_begin, towns_end),
+             	(store_distance_to_party_from_party, ":cur_dist", ":center_no", ":cur_town"),
+             	(lt, ":cur_dist", ":min_dist"),
+             	(assign, ":min_dist", ":cur_dist"),
+             	(assign, ":min_dist_town", ":cur_town"),
+          	(try_end),
+          	(party_set_slot, ":center_no", slot_village_bound_center, ":min_dist_town"),
+          	(call_script, "script_give_center_to_faction_aux", ":center_no", ":faction"),	
+          	(party_get_current_terrain, ":terrain", ":center_no"),
+		    (try_begin),
+		        (eq, ":terrain", 4), #snow terrain
+		        (party_set_icon, ":center_no", "icon_village_snow_a"),
+		        (store_random_in_range, ":exterior_scene_no", "scn_village_78", "scn_village_91"),
+		        (store_sub, ":offset", ":exterior_scene_no", "scn_village_78"),
+		        (store_add, ":exterior_scene_no", "scn_village_78", ":offset"),
+		        (party_set_slot,":center_no", slot_castle_exterior, ":exterior_scene_no"),          
+		    (else_try),
+		        (eq, ":terrain", 5), # desert terrain
+		        (party_set_icon, ":center_no", "icon_village_c"),
+		        (store_random_in_range, ":exterior_scene_no", "scn_village_91", "scn_village_110"), #could be scn_village_110 +1
+		        (store_sub, ":offset", ":exterior_scene_no", "scn_village_91"),
+		        (store_add, ":exterior_scene_no", "scn_village_91", ":offset"),
+		        (party_set_slot,":center_no", slot_castle_exterior, ":exterior_scene_no"),   
+		    (else_try),      # all other terrain
+		        (party_set_icon, ":center_no", "icon_village_a"),
+		        (store_random_in_range, ":exterior_scene_no", "scn_village_1", "scn_village_78"),
+		        (store_sub, ":offset", ":exterior_scene_no", "scn_village_1"),
+		        (store_add, ":exterior_scene_no", "scn_village_1", ":offset"),
+		        (party_set_slot,":center_no", slot_castle_exterior, ":exterior_scene_no"),         
+		    (try_end),
+		    (call_script, "script_start_refresh_village_defenders", ":center_no"),
+	        (call_script, "script_start_refresh_village_defenders", ":center_no"),
+	        (call_script, "script_start_refresh_village_defenders", ":center_no"),
+	        (call_script, "script_start_refresh_village_defenders", ":center_no"),
+	        (party_set_slot,":village_no", slot_village_raided_by, -1),
+	        (assign, ":end_cond", village_elders_end),
+	        (try_for_range, ":new_elder", village_elders_begin, ":end_cond"),
+	            (neg|troop_slot_eq, ":new_elder", slot_trp_is_active, 1),
+	            (party_set_slot, ":center_no", slot_town_elder, ":new_elder"),
+	            (troop_set_slot, ":new_elder", slot_trp_is_active, 1),
+	            (assign, ":end_cond", ":new_elder"),               
+	        (try_end),
+	        (party_set_slot, ":center_no", slot_center_last_spotted_enemy, -1),
+	        (party_set_slot, ":center_no", slot_center_is_besieged_by, -1),
+	        (party_set_slot, ":center_no", slot_center_last_taken_by_troop, -1),
+	        ##diplomacy start+ Set the home slots for town merchants, elders, etc. for reverse-lookup
+	        (try_for_range, ":offset", dplmc_slot_town_merchants_begin, dplmc_slot_town_merchants_end),
+	           (party_get_slot, ":npc", ":center_no", ":offset"),
+	           (gt, ":npc", 0),
+	           (neg|troop_slot_ge, ":npc", slot_troop_home, 1),#If the startup script wasn't altered by another mod, we don't have to worry about this condition.
+	           (troop_set_slot, ":npc", slot_troop_home, ":center_no"),
+	        (try_end),
+	        (add_party_note_tableau_mesh, ":center_no", "tableau_center_note_mesh"),
+	        (call_script, "script_start_give_center_to_lord", ":center_no",  ":town_lord", 0),		#F&B Check do we really run this for a village
+	        (assign, ":original_faction, ":faction"),
+			(faction_get_slot, ":culture", ":original_faction", slot_faction_culture),
+	        (party_set_slot, ":center_no", slot_center_culture,  ":culture"),
+	        (party_set_slot, ":center_no", slot_center_original_faction,  ":original_faction"),
+	        (party_set_slot, ":center_no", slot_center_ex_faction,  ":original_faction"),
+	        (try_begin),
+			 	 (eq, ":town_lord", "trp_player"),
+				 #Use trp_kingdom_heroes_including_player_begin instead of trp_player as a workaround for
+				 #old saved games (since uninitialized memory is 0).
+				 (party_set_slot, ":center_no", dplmc_slot_center_ex_lord, "trp_kingdom_heroes_including_player_begin"),
+				 (troop_slot_eq, "trp_player", slot_troop_home, ":center_no"),
+				 (neg|party_slot_ge, ":center_no", dplmc_slot_center_original_lord, 1),
+				 (party_set_slot, ":center_no", dplmc_slot_center_original_lord, "trp_kingdom_heroes_including_player_begin"),
+			  (else_try),
+				 (party_set_slot, ":center_no", dplmc_slot_center_ex_lord, ":town_lord"),
+				 (ge, ":town_lord", 0),
+				 (troop_slot_eq, ":town_lord", slot_troop_home, ":center_no"),
+				 (neg|party_slot_ge, ":center_no", dplmc_slot_center_original_lord, 1),
+				 (party_set_slot, ":center_no", dplmc_slot_center_original_lord, ":town_lord"),
+			(try_end),
+			(try_for_range, ":walker_no", 0, num_town_walkers),
+          		 (call_script, "script_center_set_walker_to_type", ":center_no", ":walker_no", walkert_default),
+        	(try_end),
+        	(party_get_slot, ":prosperity_factor", ":center_no", slot_town_prosperity),#modify plus or minus 40% based on prosperity
+            (val_clamp, ":prosperity_factor", 0, 101),
+            (val_add, ":prosperity_factor", 75),#average 125, min 75, max 175          
+            (store_random_in_range, ":last_arrived", 1, (24 * 7) + 1),
+            (val_mul, ":last_arrived", -1),#some time in the last 7 days, plus or minus 40%
+            (val_mul, ":last_arrived", 125),
+            (val_div, ":last_arrived", ":prosperity_factor"),
+            (party_set_slot, ":cur_village", dplmc_slot_village_trade_last_returned_from_market, ":last_arrived"),
+            (store_random_in_range, ":last_arrived", 1, (24 * 7) + 1),
+            (val_mul, ":last_arrived", -1),#some time in the last 7 days
+            (val_mul, ":last_arrived", 125),
+            (val_div, ":last_arrived", ":prosperity_factor"),
+            (party_set_slot, ":cur_village", dplmc_slot_village_trade_last_arrived_to_market, ":last_arrived"),
+            (store_random_in_range, ":troop_no", village_specialist_begin, village_specialist_end),
+			(party_set_slot, ":town_no", slot_center_specialist_type, ":troop_no"),
+			(store_random_in_range, ":amount", 1, 3),
+			(party_set_slot, ":town_no", slot_center_specialist_amount, ":amount"),		
+					################ game_script in order:
+	  
+
+	  
+      (call_script, "script_update_village_market_towns"),
+	  
+      
+	  
+	  #This needs to be after market towns
+	  (call_script, "script_initialize_economic_information"),

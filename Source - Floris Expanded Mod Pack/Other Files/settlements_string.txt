@@ -1,0 +1,50 @@
+
+	#desert towns
+	"town_19",
+	"town_20",
+	"town_21"
+	"town_22"
+	#snow towns
+	"town_9"
+	"town_11"
+	##maybe snow:
+	"town_8"
+	"town_13"
+
+	#desert village
+	"village_91"
+	...
+	"village_110"
+	#snow village
+	"village_14"
+	"village_16"
+	"village_17"
+	"village_18"
+	"village_19"
+	"village_20"
+	"village_21"
+	"village_22"
+	"village_49"
+	"village_50"
+	"village_62"
+	"village_75"
+	"village_85"
+	"village_86"
+	#desert castle
+	"castle_41"
+	"castle_42"
+	"castle_43"
+	"castle_44"
+	"castle_45"
+	"castle_46"
+	"castle_47"
+	"castle_48"
+
+	#snow castle
+	"castle_8" Jeirbe
+	"castle_18" Ismirala
+	"castle_19" Yruma
+	"castle_29" Nelag
+	"castle_39" Slezkh
+	# maybe snow:
+	"castle_7" Sungetche Castle

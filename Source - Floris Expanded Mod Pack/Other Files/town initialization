@@ -1,0 +1,196 @@
+###### this is a reduced version of script_game_start only for towns ##############
+################ game_script in order:
+# chest troop
+
+		(store_script_param_1, ":center_no"),
+		(store_script_param_2, ":faction"),
+		(store_script_param, ":town_lord", 3),
+		
+		(assign, ":end_cond", trp_castle_1_seneschal),
+		(try_for_range, ":cur_object_no", trp_town_1_seneschal, ":end_cond"),
+			(party_slot_eq, ":cur_object_no", slot_trp_is_active, 0),		
+			(party_set_slot, ":center_no", slot_town_seneschal, ":cur_object_no"),
+			(troop_set_slot, ":cur_object_no", slot_trp_is_active, 1),
+			(assign, ":end_cond", ":cur_object_no"),				#break   
+		(try_end),
+		(try_for_range, ":item_no", trade_goods_begin, trade_goods_end),
+		    (store_sub, ":offset", ":item_no", trade_goods_begin),
+		    (val_add, ":offset", slot_town_trade_good_prices_begin),
+			(party_set_slot, ":center_no", ":offset, average_price_factor),		#F&B Check should make goods initiatelly more expensive for new towns, not avg.	    		    
+		(try_end),
+									# scripts regarding trade routes were initialized here
+	    (assign, ":end_cond", mayors_end),
+        (try_for_range, ":free_mayor", mayors_begin, ":end_cond"),
+        	(troop_slot_eq, ":free_mayor", slot_trp_is_active, 0),        # Since we assign all troops at the same time, if mayor 25 is unused, all other 25th troops should be unused as well. Should be always true. So realistically, setting trp_is_active for other troops is not required, however, just do it for safety. Though we never check for it, yet.
+        	(store_sub, ":offset", ":free_mayor", mayors_begin),
+        	(store_add, ":cur_object_no", "trp_town_1_mayor", ":offset"),
+        	(party_set_slot,":center_no", slot_town_elder, ":cur_object_no"),
+        	(troop_set_slot, ":cur_object_no", slot_trp_is_active, 1),
+        	(store_add, ":cur_object_no", "trp_town_1_tavernkeeper", ":offset"),
+        	(party_set_slot,":center_no", slot_town_tavernkeeper, ":cur_object_no"),
+        	(troop_set_slot, ":cur_object_no", slot_trp_is_active, 1),
+        	(store_add, ":cur_object_no", "trp_town_1_weaponsmith", ":offset"),
+        	(party_set_slot,":center_no", slot_town_weaponsmith, ":cur_object_no"),
+        	(troop_set_slot, ":cur_object_no", slot_trp_is_active, 1),
+        	(store_add, ":cur_object_no", "trp_town_1_armorer", ":offset"),
+        	(party_set_slot,":center_no", slot_town_armorer, ":cur_object_no"),
+        	(troop_set_slot, ":cur_object_no", slot_trp_is_active, 1),
+        	(store_add, ":cur_object_no", "trp_town_1_merchant", ":offset"),
+        	(party_set_slot,":center_no", slot_town_merchant, ":cur_object_no"),
+        	(troop_set_slot, ":cur_object_no", slot_trp_is_active, 1),
+        	(store_add, ":cur_object_no", "trp_town_1_horse_merchant", ":offset"),
+        	(party_set_slot,":center_no", slot_town_horse_merchant, ":cur_object_no"),
+        	(troop_set_slot, ":cur_object_no", slot_trp_is_active, 1),
+        	(store_add, ":cur_object_no", "scn_town_1_center", ":offset"),
+        	(party_set_slot,":center_no", slot_town_center, ":cur_object_no"),    #F&B Check Can we use this multiple times? 
+        	(assign, ":end_cond", ":free_mayor"),   #break 
+      	(try_end),
+      ######## Here we assign all scenes required for a town
+        (store_random_in_range, ":offset", 1, 22),  #22 towns, picks random scenes for now. Gonna improve later on
+        (store_add, ":cur_object_no", "scn_town_1_center", ":offset"),
+        (party_set_slot,":center_no", slot_town_center, ":cur_object_no"),
+        (store_add, ":cur_object_no", "scn_town_1_castle", ":offset"),
+        (party_set_slot,":center_no", slot_town_castle, ":cur_object_no"),
+        (store_add, ":cur_object_no", "scn_town_1_prison", ":offset"),
+        (party_set_slot,":center_no", slot_town_prison, ":cur_object_no"),
+        (store_add, ":cur_object_no", "scn_town_1_walls", ":offset"),
+        (party_set_slot,":center_no", slot_town_walls, ":cur_object_no"),
+        (store_add, ":cur_object_no", "scn_town_1_tavern", ":offset"),
+        (party_set_slot,":center_no", slot_town_tavern, ":cur_object_no"),
+        (store_add, ":cur_object_no", "scn_town_1_store", ":offset"),
+        (party_set_slot,":center_no", slot_town_store, ":cur_object_no"),
+        (store_add, ":cur_object_no", "scn_town_1_arena", ":offset"),
+        (party_set_slot,":center_no", slot_town_arena, ":cur_object_no"),
+        (store_add, ":cur_object_no", "scn_town_1_alley", ":offset"),
+        (party_set_slot,":center_no", slot_town_alley, ":cur_object_no"), 
+        (party_set_slot,":center_no", slot_town_reinforcement_party_template, "pt_center_reinforcements"),  
+        #Check, whether town needs to be besieged with belfry
+        (try_begin),              #F&B check. If we messed up, we are off by 1 
+          (this_or_next|eq, ":offset", 12),
+          (eq, ":offset", 15),
+          (party_set_slot, ":center_no", slot_center_siege_with_belfry, 1),
+        (try_end),
+        (party_set_slot, ":center_no", slot_center_last_spotted_enemy, -1),
+        (party_set_slot, ":center_no", slot_center_is_besieged_by, -1),
+        (party_set_slot, ":center_no", slot_center_last_taken_by_troop, -1),
+        (call_script, "script_initialize_town_arena_info_dynamic", ":center_no", ":offset"),
+        ##diplomacy start+ Set the home slots for town merchants, elders, etc. for reverse-lookup
+        (try_for_range, ":offset", dplmc_slot_town_merchants_begin, dplmc_slot_town_merchants_end),
+           (party_get_slot, ":npc", ":center_no", ":offset"),
+           (gt, ":npc", 0),
+           (neg|troop_slot_ge, ":npc", slot_troop_home, 1),#If the startup script wasn't altered by another mod, we don't have to worry about this condition.
+           (troop_set_slot, ":npc", slot_troop_home, ":center_no"),
+        (try_end),
+        (add_party_note_tableau_mesh, ":center_no", "tableau_center_note_mesh"),
+        (call_script, "script_give_center_to_faction_aux", ":center_no", ":faction"),
+        (call_script, "script_start_give_center_to_lord", ":center_no", ":town_lord", 0),
+        (store_faction_of_party, ":original_faction", ":center_no"),			
+        (faction_get_slot, ":culture", ":original_faction", slot_faction_culture),
+        (party_set_slot, ":center_no", slot_center_culture,  ":culture"),
+        (party_set_slot, ":center_no", slot_center_original_faction,  ":original_faction"),
+        (party_set_slot, ":center_no", slot_center_ex_faction,  ":original_faction"),
+        ##diplomacy start+ set additional slots
+		(party_get_slot, ":town_lord", ":center_no", slot_town_lord),
+		(try_begin),
+			(eq, ":town_lord", "trp_player"),
+			 #Use trp_kingdom_heroes_including_player_begin instead of trp_player as a workaround for
+			 #old saved games (since uninitialized memory is 0).
+			(party_set_slot, ":center_no", dplmc_slot_center_ex_lord, "trp_kingdom_heroes_including_player_begin"),
+			(troop_slot_eq, "trp_player", slot_troop_home, ":center_no"),
+			(neg|party_slot_ge, ":center_no", dplmc_slot_center_original_lord, 1),
+			(party_set_slot, ":center_no", dplmc_slot_center_original_lord, "trp_kingdom_heroes_including_player_begin"),
+		(else_try),
+			(party_set_slot, ":center_no", dplmc_slot_center_ex_lord, ":town_lord"),
+			(ge, ":town_lord", 0),
+			(troop_slot_eq, ":town_lord", slot_troop_home, ":center_no"),
+			(neg|party_slot_ge, ":center_no", dplmc_slot_center_original_lord, 1),
+			(party_set_slot, ":center_no", dplmc_slot_center_original_lord, ":town_lord"),
+		(try_end),
+		##diplomacy end+
+		(call_script, "script_update_village_market_towns"),			#F&B check. Do we really want to run this?
+		#Initialize walkers
+        (try_for_range, ":walker_no", 0, num_town_walkers),
+          	(call_script, "script_center_set_walker_to_type", ":center_no", ":walker_no", walkert_default),
+        (try_end),
+      	(call_script, "script_initialize_economic_information"),		#F&B check. Do we really want to run this?
+
+      	(assign, ":garrison_strength", 40),
+        (try_for_range, ":unused", 0, ":garrison_strength"),
+          	(call_script, "script_cf_reinforce_party", ":center_no"),	#F&B check. This is cheaty. We want to transfer troops from other fiefs instead.
+        (try_end),
+        #Fill town food stores up to a quarter
+        (call_script, "script_center_get_food_store_limit", ":center_no"),
+        (assign, ":food_store_limit", reg0),
+        (val_div, ":food_store_limit", 4),
+        (party_set_slot, ":center_no", slot_party_food_store, ":food_store_limit"),
+        (party_set_slot, ":center_no", slot_town_player_odds, 1000),
+        (try_for_range, ":cur_slot", dplmc_slot_town_trade_route_last_arrivals_begin, dplmc_slot_town_trade_route_last_arrivals_end),
+		    (party_slot_eq, ":center_no", ":cur_slot", 0),
+		    (store_random_in_range, ":last_arrived", 1, (24 * 7 * 4) + 1),#some time in the last four weeks. Once we get building quest running, we can track support caravans instead of randomizing
+			(val_mul, ":last_arrived", -1),			
+			(party_get_slot, ":prosperity_factor", ":center_no", slot_town_prosperity),#modify plus or minus 40% based on prosperity
+			(val_clamp, ":prosperity_factor", 0, 101),
+			(val_add, ":prosperity_factor", 75),
+			(val_mul, ":last_arrived", 125),
+			(val_div, ":last_arrived", ":prosperity_factor"),#last arrival some time in the last four weeks, plus or minus 40%
+			(party_set_slot, ":center_no", ":cur_slot", ":last_arrived"),
+		 (try_end),
+		 (store_random_in_range, ":troop_no", town_specialist_begin, town_specialist_end),
+		 (party_set_slot, ":center_no", slot_center_specialist_type, ":troop_no"),
+		 (store_random_in_range, ":amount", 1, 3),
+		 (party_set_slot, ":center_no", slot_center_specialist_amount, ":amount"),	
+
+		 (store_random_in_range, ":amount", 4000, 8000),
+		 (party_set_slot, ":center_no", slot_center_population, ":amount"),
+		 (val_div, ":amount", 500),
+		 (party_set_slot, ":center_no", slot_town_acres, ":amount"),
+		 
+		 (party_set_slot, ":center_no", slot_town_wealth, 2000),			#F&B Check. This is temporary test only
+		 												
+####################
+
+      
+      (call_script, "script_initialize_trade_routes"),                  #F&B return. We want to expand and include new towns aswell as remove downgraded towns
+      (call_script, "script_initialize_sea_trade_routes"), ###Seatrade Marker
+      
+  
+	  
+	  
+
+      (try_for_range, ":center_no", walled_centers_begin, walled_centers_end),#add town garrisons
+        #Add initial center wealth
+        (assign, ":initial_wealth", 2000),
+        (try_begin),
+          (is_between, ":center_no", towns_begin, towns_end),
+          (val_mul, ":initial_wealth", 2),
+        (try_end),
+        (party_set_slot, ":center_no", slot_town_wealth, ":initial_wealth"),
+	  
+	 ##diplomacy start+
+	  
+      (call_script, "script_update_companion_candidates_in_taverns"),
+      (call_script, "script_update_ransom_brokers"),
+      (call_script, "script_update_tavern_travellers"),
+      (call_script, "script_update_tavern_minstrels"),
+      (call_script, "script_update_booksellers"),
+	  #Duh Town Population for Land required // Linked to bank system
+	  
+	  (try_for_range, ":town_no", towns_begin, towns_end),
+		(this_or_next|eq,":town_no","p_town_1"),
+		(this_or_next|eq,":town_no","p_town_5"),
+		(this_or_next|eq,":town_no","p_town_6"),
+		(this_or_next|eq,":town_no","p_town_8"),
+		(this_or_next|eq,":town_no","p_town_10"),
+		(eq,"$current_town","p_town_19"),
+		(store_random_in_range, ":amount", 18000, 22000),
+		(party_set_slot, ":town_no", slot_center_population, ":amount"),
+		(val_div, ":amount", 200),
+		(party_set_slot, ":town_no", slot_town_acres, ":amount"),
+	  (else_try),
+		(store_random_in_range, ":amount", 8000, 12000),
+		(party_set_slot, ":town_no", slot_center_population, ":amount"),
+		(val_div, ":amount", 200),
+		(party_set_slot, ":town_no", slot_town_acres, ":amount"),		
+	  (try_end),
+	  
+	  #Duh Over
